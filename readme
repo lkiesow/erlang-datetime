@@ -1,0 +1,52 @@
+Module description
+==================
+This module provides simple import and export functions for datetime strings
+specified by RFD822 and the RSS specification to erlang datetime tuples as
+returned for example by erlang:universaltime() or erlang:localtime().
+
+
+datetime_encode
+===============
+Convert a erlang datetime struct to its string representation according to
+either RFC822 or the RSS specification.
+
+datetime_encode( DateTime, TimeZone, SpecType )
+                    |         |         +------- Defaults to 'rfc822'
+                    |         +------- Defaults to 'GMT'
+                    +------- Defaults to erlang:universaltime()
+
+DateTime must be of the form {{Year,Month,Day},{Hour,Minute,Second}}. This
+         form is returned for example by the erlang functions
+         universaltime() or localtime().
+TimeZone has to be a zone according to RFC822. Additional time zones may be
+         accepted in the future.
+SpecType can be either 'rfc822' or 'rss'. Both specifications are basically
+         the same except for the length of the year. RSS supports both, two
+         and four digit years while rfc882 only accepts two digit year
+         representation.
+
+
+datetime_decode
+===============
+Converts a DateTime string according to rfc822 or RSS specifications into an
+erlang datetime tupel. The first parameter is the datetime string, the second
+specifies the handling of years represented as two digits.
+According to the RFC822 a year is only represented by its two last digits.
+There are some methods provided for expanding those short year representations
+to a full year. You can choose between the following expansion rules. The
+default rule is 'smart'.
+ smart             If the two digit year is less or equal of the two last
+                   digits of the current year, assume that the date is from
+                   the current century. Otherwise assume that the date is
+                   from last century.
+                   Example (Current year is 2012):
+                     12  will become  2012
+                     34  will become  1934
+                     05  will become  2005
+ current_century   It is assumed that all dates are from this century.
+ no_alternation    No alternation is done. Thus two digit years stay as they
+                   are.
+ DIGIT             DIGIT may be any integer. Using this method you can
+                   specify a concrete century. This number is basically
+                   added to the two digit year. Thus 34 with DIGIT = 1800
+                   will become 1834.
