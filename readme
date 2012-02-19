@@ -1,8 +1,8 @@
 Module description
 ==================
 This module provides simple import and export functions for datetime strings
-specified by RFD822 and the RSS specification to erlang datetime tuples as
-returned for example by erlang:universaltime() or erlang:localtime().
+specified by RFC822, RFC2822 and the RSS specification to erlang datetime
+tuples as returned for example by erlang:universaltime() or erlang:localtime().
 
 
 datetime_encode
@@ -11,7 +11,7 @@ Convert a erlang datetime struct to its string representation according to
 either RFC822 or the RSS specification.
 
 datetime_encode( DateTime, TimeZone, SpecType )
-                    |         |         +------- Defaults to 'rfc822'
+                    |         |         +------- Defaults to 'rfc2822'
                     |         +------- Defaults to 'GMT'
                     +------- Defaults to erlang:universaltime()
 
@@ -24,6 +24,8 @@ SpecType can be either 'rfc822' or 'rss'. Both specifications are basically
          the same except for the length of the year. RSS supports both, two
          and four digit years while rfc882 only accepts two digit year
          representation.
+			Some specifications of rfc2882 marked as obsolete and comments are not
+			supported as they are basically never used in the real world.
 
 
 datetime_decode

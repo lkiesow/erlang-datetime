@@ -36,8 +36,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%                                                                            %
 %%% This module provides simple import and export functions for datetime       %
-%%% strings specified by RFD822 and the RSS specification to erlang datetime   %
-%%% tuples as returned for example by erlang:universaltime() or                %
+%%% strings specified by RFC822, RFC2822 and the RSS specification to erlang   %
+%%% datetime tuples as returned for example by erlang:universaltime() or       %
 %%% erlang:localtime().                                                        %
 %%%                                                                            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,19 +185,24 @@ expand_year( Year, BaseYear ) ->
 %% either RFC822 or the RSS specification.
 %% 
 %% datetime_encode( DateTime, TimeZone, SpecType )
-%%                     |         |         +------- Defaults to 'rfc822'
+%%                     |         |         +------- Defaults to 'rfc2822'
 %%                     |         +------- Defaults to 'GMT'
 %%                     +------- Defaults to erlang:universaltime()
 %% 
 %% DateTime must be of the form {{Year,Month,Day},{Hour,Minute,Second}}. This
 %%          form is returned for example by the erlang functions
 %%          universaltime() or localtime().
-%% TimeZone has to be a zone according to RFC822. Additional time zones may be
-%%          accepted in the future.
-%% SpecType can be either 'rfc822' or 'rss'. Both specifications are basically
-%%          the same except for the length of the year. RSS supports both, two
-%%          and four digit years while rfc882 only accepts two digit year
-%%          representation.
+%% TimeZone has to be a zone according to RFC822 or RFC2822. Additional time
+%%          zones may be accepted in the future.
+%% SpecType can be either 'rfc822', 'rfc2822' or 'rss'. Both specifications are
+%%         basically the same except for the length of the year. RSS supports
+%%         both, two and four digit years while rfc882 only accepts two digit
+%%         year representation. rfc2822 basically equals the RSS
+%%         specifications.
+%%         Important: Some specifications of rfc2882 marked as obsolete and
+%%         comments are not supported at the moment. At they will probably
+%%         never be supported as they are basically never used in the real
+%%         world.
 datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc822 ) ->
 	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [ 
 			get_day_name( Date ),
@@ -210,6 +215,12 @@ datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rss ) ->
 			Year, month_name(Mon), Day,
 			Hour, Min, Sec, 'GMT' ] ));
 
+datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc2822 ) ->
+	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [ 
+			get_day_name( Date ),
+			Year, month_name(Mon), Day,
+			Hour, Min, Sec, '+0000' ] ));
+
 datetime_encode( DateTime, Zone, Type ) ->
 	Secs  = calendar:datetime_to_gregorian_seconds( DateTime ),
 	{H,M} = timezone_offset( Zone ),
@@ -218,15 +229,15 @@ datetime_encode( DateTime, Zone, Type ) ->
 
 
 datetime_encode( DateTime, Type ) ->
-	datetime_encode( DateTime, Type, rfc822 ).
+	datetime_encode( DateTime, Type, rfc2822 ).
 
 
 datetime_encode( DateTime ) ->
-	datetime_encode( DateTime, 'GMT', rfc822 ).
+	datetime_encode( DateTime, 'GMT', rfc2822 ).
 
 
 datetime_encode() ->
-	datetime_encode( erlang:universaltime(), 'GMT', rfc822 ).
+	datetime_encode( erlang:universaltime(), 'GMT', rfc2822 ).
 
 
 %% Converts a DateTime string according to rfc822 or RSS specifications into an
