@@ -242,7 +242,7 @@ datetime_decode( DateTimeStr, YearHandling ) ->
 	Year = expand_year(list_to_integer(StrYear), YearHandling ),
 	Mon  = month_by_name(StrMon),
 	Day  = list_to_integer(StrDay),
-	[Hour,Min,Sec] = [list_to_integer(X) || X <- string:tokens(StrTime, ":")],
+	[Hour,Min,Sec|_] = [list_to_integer(X) || X <- string:tokens(StrTime, ":")] ++ [0],
 	DateTime = {{Year,Mon,Day},{Hour,Min,Sec}},
 	Secs  = calendar:datetime_to_gregorian_seconds( DateTime ),
 	{HOff,MOff} = timezone_offset( Zone ),
