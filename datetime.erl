@@ -232,6 +232,11 @@ datetime_encode( DateTime, Type ) ->
 	datetime_encode( DateTime, Type, rfc2822 ).
 
 
+datetime_encode( {MegaSecs,Secs,MicroSecs} ) ->
+	datetime_encode( 
+		calendar:now_to_datetime({MegaSecs,Secs,MicroSecs}),
+		'GMT', rfc2822 );
+
 datetime_encode( DateTime ) ->
 	datetime_encode( DateTime, 'GMT', rfc2822 ).
 
