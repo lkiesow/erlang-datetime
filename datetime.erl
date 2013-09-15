@@ -49,7 +49,7 @@
 
 %% Takes a numerical representation of a month and returns its representation
 %% as a list of three characters.
-%% 
+%%
 %% X should be an integer with 0 <= X <= 12.
 month_name( X ) when is_integer(X) ->
 	case X of
@@ -70,7 +70,7 @@ month_name( X ) when is_integer(X) ->
 
 %% Takes a three character representation of a month and returns its numerical
 %% representation.
-%% 
+%%
 %% X should be a list of three charaters or a binary which will be
 %% automatically converted to a list.
 month_by_name( X ) when is_binary(X) ->
@@ -115,7 +115,7 @@ timezone_offset( TZ ) when is_binary(TZ) ->
 	timezone_offset( binary_to_list(TZ) );
 
 timezone_offset( [TZ] ) ->
-	{ if 
+	{ if
 		TZ >= $A, TZ =< $I -> 64-TZ;
 		TZ >= $K, TZ =< $M -> 65-TZ;
 		TZ >= $N, TZ =< $Y -> TZ-$M;
@@ -183,12 +183,12 @@ expand_year( Year, BaseYear ) ->
 
 %% Convert a erlang datetime struct to its string representation according to
 %% either RFC822 or the RSS specification.
-%% 
+%%
 %% datetime_encode( DateTime, TimeZone, SpecType )
 %%                     |         |         +------- Defaults to 'rfc2822'
 %%                     |         +------- Defaults to 'GMT'
 %%                     +------- Defaults to erlang:universaltime()
-%% 
+%%
 %% DateTime must be of the form {{Year,Month,Day},{Hour,Minute,Second}}. This
 %%          form is returned for example by the erlang functions
 %%          universaltime() or localtime().
@@ -203,20 +203,29 @@ expand_year( Year, BaseYear ) ->
 %%         comments are not supported at the moment. At they will probably
 %%         never be supported as they are basically never used in the real
 %%         world.
+datetime_encode({{Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc822) when is_float(Sec) ->
+    datetime_encode({{Year, Mon, Day},{Hour, Min, round(Sec)}}, 'GMT', rfc822);
+
 datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc822 ) ->
-	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [ 
+	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [
 			get_day_name( Date ),
 			(Year rem 1000), month_name(Mon), Day,
 			Hour, Min, Sec, 'GMT' ] ));
 
+datetime_encode({{Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rss ) when is_float(Sec) ->
+    datetime_encode({{Year, Mon, Day}, {Hour, Min, round(Sec)}}, 'GMT', rss);
+
 datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rss ) ->
-	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [ 
+	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [
 			get_day_name( Date ),
 			Year, month_name(Mon), Day,
 			Hour, Min, Sec, 'GMT' ] ));
 
+datetime_encode({{Year, Mon, Day}, {Hour, Min, Sec}}, 'GMT', rfc2822) when is_float(Sec) ->
+    datetime_encode({{Year, Mon, Day}, {Hour, Min, round(Sec)}}, 'GMT', rfc2822);
+
 datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc2822 ) ->
-	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [ 
+	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [
 			get_day_name( Date ),
 			Year, month_name(Mon), Day,
 			Hour, Min, Sec, '+0000' ] ));
@@ -233,7 +242,7 @@ datetime_encode( DateTime, Type ) ->
 
 
 datetime_encode( {MegaSecs,Secs,MicroSecs} ) ->
-	datetime_encode( 
+	datetime_encode(
 		calendar:now_to_datetime({MegaSecs,Secs,MicroSecs}),
 		'GMT', rfc2822 );
 
@@ -253,7 +262,7 @@ datetime_decode( D, Y ) when is_binary(D) ->
 	datetime_decode( binary_to_list(D), Y );
 
 datetime_decode( DateTimeStr, YearHandling ) ->
-	[StrYear,StrMon,StrDay,StrTime,Zone] = 
+	[StrYear,StrMon,StrDay,StrTime,Zone] =
 		string:tokens( lists:last(string:tokens( DateTimeStr, ",")), " "),
 	Year = expand_year(list_to_integer(StrYear), YearHandling ),
 	Mon  = month_by_name(StrMon),
