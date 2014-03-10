@@ -207,27 +207,27 @@ datetime_encode({{Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc822) when is_float(Se
     datetime_encode({{Year, Mon, Day},{Hour, Min, round(Sec)}}, 'GMT', rfc822);
 
 datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc822 ) ->
-	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [
+	lists:flatten(io_lib:format( "~s, ~B ~s ~2..0B ~2..0B:~2..0B:~2..0B ~s", [
 			get_day_name( Date ),
-			(Year rem 1000), month_name(Mon), Day,
-			Hour, Min, Sec, 'GMT' ] ));
+			Day, month_name(Mon), (Year rem 1000),
+			Hour, Min, Sec, '+0000' ] ));
 
 datetime_encode({{Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rss ) when is_float(Sec) ->
     datetime_encode({{Year, Mon, Day}, {Hour, Min, round(Sec)}}, 'GMT', rss);
 
 datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rss ) ->
-	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [
+	lists:flatten(io_lib:format( "~s, ~B ~s ~4..0B ~2..0B:~2..0B:~2..0B ~s", [
 			get_day_name( Date ),
-			Year, month_name(Mon), Day,
-			Hour, Min, Sec, 'GMT' ] ));
+			Day, month_name(Mon), Year,
+			Hour, Min, Sec, '+0000' ] ));
 
 datetime_encode({{Year, Mon, Day}, {Hour, Min, Sec}}, 'GMT', rfc2822) when is_float(Sec) ->
     datetime_encode({{Year, Mon, Day}, {Hour, Min, round(Sec)}}, 'GMT', rfc2822);
 
 datetime_encode( {Date={Year,Mon,Day},{Hour,Min,Sec}}, 'GMT', rfc2822 ) ->
-	lists:flatten(io_lib:format( "~s, ~B ~s ~B ~2..0B:~2..0B:~2..0B ~s", [
+	lists:flatten(io_lib:format( "~s, ~B ~s ~4..0B ~2..0B:~2..0B:~2..0B ~s", [
 			get_day_name( Date ),
-			Year, month_name(Mon), Day,
+			Day, month_name(Mon), Year,
 			Hour, Min, Sec, '+0000' ] ));
 
 datetime_encode( DateTime, Zone, Type ) ->
@@ -262,7 +262,7 @@ datetime_decode( D, Y ) when is_binary(D) ->
 	datetime_decode( binary_to_list(D), Y );
 
 datetime_decode( DateTimeStr, YearHandling ) ->
-	[StrYear,StrMon,StrDay,StrTime,Zone] =
+	[StrDay,StrMon,StrYear,StrTime,Zone] =
 		string:tokens( lists:last(string:tokens( DateTimeStr, ",")), " "),
 	Year = expand_year(list_to_integer(StrYear), YearHandling ),
 	Mon  = month_by_name(StrMon),
@@ -271,7 +271,7 @@ datetime_decode( DateTimeStr, YearHandling ) ->
 	DateTime = {{Year,Mon,Day},{Hour,Min,Sec}},
 	Secs  = calendar:datetime_to_gregorian_seconds( DateTime ),
 	{HOff,MOff} = timezone_offset( Zone ),
-	UTCSecs = Secs+(MOff*60)+(HOff*3600),
+	UTCSecs = Secs+(-MOff*60)+(-HOff*3600),
 	calendar:gregorian_seconds_to_datetime(UTCSecs).
 
 
